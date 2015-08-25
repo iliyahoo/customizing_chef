@@ -36,10 +36,11 @@ chef-server-ctl install opscode-manage
 opscode-manage-ctl reconfigure
 chef-server-ctl reconfigure
 ```
-# on workstation and node edit /etc/hosts file appending: 
+# on workstation and node edit /etc/hosts file appending:
+```
 <chef-server_IP>    chef-server
 <chef-node01_IP>    chef-node01
-
+```
 # go to vagrant shared folder
 ```
 cd ../
