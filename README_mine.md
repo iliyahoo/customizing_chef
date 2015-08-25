@@ -1,9 +1,9 @@
 ### NEW installation ###
 # http://misheska.com/blog/2014/11/25/chef-server-12/
-
+```
 yum localinstall chef-server-core-12.1.2-1.el7.x86_64.rpm
 chef-server-ctl reconfigure
-
+```
 # Create an admin user
 mkdir /vagrant/.chef
 cd /vagrant/.chef
