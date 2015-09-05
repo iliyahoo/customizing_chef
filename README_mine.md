@@ -1,4 +1,6 @@
+########################
 ### NEW installation ###
+########################
 # http://misheska.com/blog/2014/11/25/chef-server-12/
 
 yum localinstall chef-server-core-12.1.2-1.el7.x86_64.rpm
@@ -27,7 +29,7 @@ cache_options( :path => "#{ENV['HOME']}/.chef/checksums" )
 cookbook_path            ["#{current_dir}/../cookbooks"]
 EOF
 
-# create web UI
+# install web UI
 chef-server-ctl install opscode-manage
 opscode-manage-ctl reconfigure
 chef-server-ctl reconfigure
@@ -42,21 +44,31 @@ knife client list
 # bootstrap new node
 knife bootstrap --sudo --ssh-user vagrant --ssh-password vagrant --no-host-key-verify chef-node01
 
+# download cookbooks
 cd cookbooks
-knife cookbook site download cron
-knife cookbook site download logrotate
-knife cookbook site download chef_handler
-knife cookbook site download windows
 knife cookbook site download chef-client
 
+# unpack and remove archives
 for i in $(ls *.tar.gz) ; do tar -zxvf $i ; rm -f $i ; done
 
+# upload cookbooks on to chef-server
 cd ../
-knife cookbook upload cron --cookbook-path cookbooks
-knife cookbook upload logrotate --cookbook-path cookbooks
-knife cookbook upload chef_handler --cookbook-path cookbooks
-knife cookbook upload windows --cookbook-path cookbooks
 knife cookbook upload chef-client --cookbook-path cookbooks
+
+# instead of 'knife cookbook upload' use BERKS
+# it resolves all dependencies
+berks init <existed_cookbook>
+# Getting a berks init error?
+# If you get an error like [...] does not appear to be a valid cookbook. Does it have a metadata.rb?—upgrade your knife version.
+# If you can’t, one workaround is just to add a metadata.rb file, the contents of which is simply name "packageshortnamehere":
+cat << EOF > <existed_cookbook>/metadata.rb
+name "packageshortnamehere"
+maintainer 'Awesome Company, Inc.'
+maintainer_email 'you@example.com'
+EOF
+# Then run berks init again.
+berks instal -b <existed_cookbook>/Berksfile
+berks upload git -b <existed_cookbook>/Berksfile --no-ssl-verify
 
 # assign a recipe to node
 knife node run_list add chef-node01 "recipe[chef-client::delete_validation]"
@@ -65,5 +77,6 @@ knife node run_list add chef-node01 "recipe[chef-client]"
 # set chef-node attributes:
 {"chef_client":{"config":{"ssl_verify_mode":":verify_peer","ssl_ca_file":"/chef-repo/.chef/trusted_certs/chef-server.crt"}}}
 
-# on chef-node
+# launch assignment recipe on chef-node
 chef-client
+

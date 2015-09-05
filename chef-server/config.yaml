@@ -1,6 +1,6 @@
 ---
 vagrantfile:
-    box: chef/centos-7.0
+    box: charlesyan/centos-7.1-minimal-chef
     interface: en0
     hosts:
         chef-server:
